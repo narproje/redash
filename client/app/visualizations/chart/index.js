@@ -1,4 +1,4 @@
-import { extend, has, partial, intersection, without, contains, isUndefined, sortBy, each, pluck, keys, difference } from 'underscore';
+import { extend, has, partial, intersection, without, contains, isUndefined, sortBy, each, pluck, keys, difference, union } from 'underscore';
 import plotly from './plotly';
 import template from './chart.html';
 import editorTemplate from './chart-editor.html';
@@ -82,6 +82,12 @@ function ChartEditor(ColorPalette, clientConfig) {
           scope.options.seriesOptions[key].type = scope.options.globalSeriesType;
         });
       };
+
+      scope.selectAllyAxisColumns = () => {
+        scope.form.yAxisColumns = union(scope.form.yAxisColumns, scope.columnNames);
+      };
+
+      scope.deselectAllyAxisColumns = () => { scope.form.yAxisColumns = []; };
 
       scope.options.customCode = `// Available variables are x, ys, element, and Plotly
 // Type console.log(x, ys); for more info about x and ys

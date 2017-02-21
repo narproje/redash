@@ -56,7 +56,8 @@
           <small class="text-muted" ng-bind="columns[column].type"></small>
         </ui-select-choices>
       </ui-select>
-
+      <button type="button" class="btn" ng-click="selectAllyAxisColumns()">Select All</button>
+      <button type="button" class="btn" ng-click="deselectAllyAxisColumns()">Deselect All</button>
     </div>
 
     <div class="form-group" ng-if="options.globalSeriesType != 'custom'">
