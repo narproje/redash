@@ -416,7 +416,8 @@ const PlotlyChart = () => {
         descent: -150,
       };
 
-      scope.plotlyOptions = { showLink: false,
+      scope.plotlyOptions = {
+        showLink: false,
         displaylogo: false,
         modeBarButtonsToAdd: [{
           name: 'Show/Hide All Legends',
