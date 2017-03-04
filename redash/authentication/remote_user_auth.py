@@ -16,7 +16,12 @@ def login():
         logger.error("Cannot use remote user for login without being enabled in settings")
         return redirect(url_for('redash.index', next=next_path))
 
-    email = request.headers.get(settings.REMOTE_USER_HEADER)
+    name = request.headers.get(settings.REMOTE_USER_HEADER)
+
+    # Fix double decode of multi-byte displayNames.
+    name = name.encode('raw_unicode_escape').decode('utf-8')
+
+    email = request.headers.get(settings.REMOTE_MAIL_HEADER) or name
 
     # Some Apache auth configurations will, stupidly, set (null) instead of a
     # falsey value.  Special case that here so it Just Works for more installs.
@@ -25,10 +30,10 @@ def login():
     if email == '(null)':
         email = None
 
-    if not email:
+    if not name:
         logger.error("Cannot use remote user for login when it's not provided in the request (looked in headers['" + settings.REMOTE_USER_HEADER + "'])")
         return redirect(url_for('redash.index', next=next_path))
 
     logger.info("Logging in " + email + " via remote user")
-    create_and_login_user(current_org, email, email)
+    create_and_login_user(current_org, name, email)
     return redirect(next_path or url_for('redash.index'), code=302)

@@ -99,7 +99,7 @@ SAML_NAMEID_FORMAT = os.environ.get("REDASH_SAML_NAMEID_FORMAT", "")
 SAML_CALLBACK_SERVER_NAME = os.environ.get("REDASH_SAML_CALLBACK_SERVER_NAME", "")
 
 # Enables the use of an externally-provided and trusted remote user via an HTTP
-# header.  The "user" must be an email address.
+# header.
 #
 # By default the trusted header is X-Forwarded-Remote-User.  You can change
 # this by setting REDASH_REMOTE_USER_HEADER.
@@ -123,6 +123,9 @@ SAML_CALLBACK_SERVER_NAME = os.environ.get("REDASH_SAML_CALLBACK_SERVER_NAME", "
 # login page to trigger remote user auth.
 REMOTE_USER_LOGIN_ENABLED = parse_boolean(os.environ.get("REDASH_REMOTE_USER_LOGIN_ENABLED", "false"))
 REMOTE_USER_HEADER = os.environ.get("REDASH_REMOTE_USER_HEADER", "X-Forwarded-Remote-User")
+REMOTE_MAIL_HEADER = os.environ.get("REDASH_REMOTE_MAIL_HEADER", "AUTHENTICATE_MAIL")
+
+
 
 # Usually it will be a single path, but we allow to specify additional ones to override the default assets. Only the
 # last one will be used for Flask templates.
