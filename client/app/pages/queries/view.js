@@ -1,4 +1,4 @@
-import { pick, any, some, find } from 'underscore';
+import { pick, any, some, find, union } from 'underscore';
 import template from './query.html';
 
 function QueryViewCtrl($scope, Events, $route, $routeParams, $location, $window, $q,
@@ -108,8 +108,20 @@ function QueryViewCtrl($scope, Events, $route, $routeParams, $location, $window,
   $scope.query = $route.current.locals.query;
   $scope.showPermissionsControl = clientConfig.showPermissionsControl;
 
+  $scope.selectAll = () => {
+    // Select all items if multi-filter is focused
+    const focused = document.activeElement;
+    const container = focused.parentElement.parentElement;
+
+    if (focused.type === 'search' && container.getAttribute('ng-if') === 'filter.multiple') {
+      const nth = parseInt(container.getAttribute('nth-filter'), 10);
+      $scope.filters[nth].current = union($scope.filters[nth].current, $scope.filters[nth].values);
+    }
+  };
+
   const shortcuts = {
     'mod+enter': $scope.executeQuery,
+    'mod+a': $scope.selectAll,
   };
 
   KeyboardShortcuts.bind(shortcuts);
