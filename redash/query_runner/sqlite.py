@@ -2,6 +2,8 @@ import json
 import logging
 import sqlite3
 import sys
+import datetime
+import time
 
 from redash.query_runner import BaseSQLQueryRunner
 from redash.query_runner import register
@@ -60,8 +62,16 @@ class Sqlite(BaseSQLQueryRunner):
 
         return schema.values()
 
+    def types_map(self, val):
+        if isinstance(val, int):
+            return "integer"
+        elif isinstance(val, float):
+            return "float"
+        else:
+            return
+
     def run_query(self, query, user):
-        connection = sqlite3.connect(self._dbpath)
+        connection = sqlite3.connect(self._dbpath, detect_types=sqlite3.PARSE_DECLTYPES)
 
         cursor = connection.cursor()
 
@@ -70,9 +80,14 @@ class Sqlite(BaseSQLQueryRunner):
 
             if cursor.description is not None:
                 columns = self.fetch_columns([(i[0], None) for i in cursor.description])
-                rows = [dict(zip((c['name'] for c in columns), row)) for row in cursor]
 
-                data = {'columns': columns, 'rows': rows}
+                # fetchall so that result can be used to generate bot rows and cols
+                data = cursor.fetchall()
+                rows = [dict(zip((c['name'] for c in columns), row)) for row in data]
+                columns_with_type = self.fetch_columns([(i[0], self.types_map(k)) for i, k \
+                                                        in zip(cursor.description, data[0])])
+
+                data = {'columns': columns_with_type, 'rows': rows}
                 error = None
                 json_data = json.dumps(data, cls=JSONEncoder)
             else:
