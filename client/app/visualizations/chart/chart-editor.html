@@ -103,6 +103,13 @@
       </label>
     </div>
 
+    <div class="checkbox" ng-if="options.globalSeriesType != 'custom'">
+      <label>
+        <input type="checkbox" ng-model="options.annotation.enabled">
+        <i class="input-helper"></i> Show Annotation
+      </label>
+    </div>
+
     <div class="form-group" ng-if="options.globalSeriesType != 'custom'">
       <label class="control-label">Stacking</label>
 

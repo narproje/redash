@@ -180,6 +180,28 @@ function getScaleType(scale) {
   return scale;
 }
 
+function annotateSeries(series) {
+  if (series.type === 'bar') {
+    series.text = series.y;
+    series.textposition = Array(series.y.length).fill('outside');
+  } else if (series.type === 'scatter') {
+    series.mode += '+text';
+    series.text = series.y;
+    series.textposition = Array(series.y.length).fill('top right');
+  }
+}
+
+function annotateData(xval, yval) {
+  return {
+    x: xval,
+    y: yval,
+    text: yval,
+    xanchor: 'center',
+    yanchor: 'bottom',
+    showarrow: false,
+  };
+}
+
 function getColor(index) {
   return ColorPaletteArray[index % ColorPaletteArray.length];
 }
@@ -227,6 +249,8 @@ const PlotlyChart = () => {
       function recalculateOptions() {
         scope.data.length = 0;
         scope.layout.showlegend = has(scope.options, 'legend') ? scope.options.legend.enabled : true;
+        scope.layout.annotations = [];
+        const showannotation = has(scope.options, 'annotation') ? scope.options.annotation.enabled : true;
         if (has(scope.options, 'bottomMargin')) {
           bottomMargin = parseInt(scope.options.bottomMargin, 10);
           scope.layout.margin.b = bottomMargin;
@@ -289,6 +313,7 @@ const PlotlyChart = () => {
           const plotlySeries = {
             x: [],
             y: [],
+            annotations: [],
             error_y: { array: [] },
             name: seriesOptions.name || series.name,
             marker: { color: seriesOptions.color ? seriesOptions.color : getColor(index) },
@@ -317,16 +342,26 @@ const PlotlyChart = () => {
             });
 
             unifiedX.forEach((x) => {
-              plotlySeries.x.push(normalizeValue(x));
-              plotlySeries.y.push(normalizeValue(yValues[x] || null));
+              const xval = normalizeValue(x);
+              const yval = normalizeValue(yValues[x] || null);
+              plotlySeries.x.push(xval);
+              plotlySeries.y.push(yval);
+              if (seriesOptions.type === 'line' || seriesOptions.type === 'area') {
+                plotlySeries.annotations.push(annotateData(xval, yval));
+              }
               if (!isUndefined(eValues[x])) {
                 plotlySeries.error_y.array.push(normalizeValue(eValues[x] || null));
               }
             });
           } else {
             data.forEach((row) => {
-              plotlySeries.x.push(normalizeValue(row.x));
-              plotlySeries.y.push(normalizeValue(row.y));
+              const xval = normalizeValue(row.x);
+              const yval = normalizeValue(row.y);
+              plotlySeries.x.push(xval);
+              plotlySeries.y.push(yval);
+              if (seriesOptions.type === 'line' || seriesOptions.type === 'area') {
+                plotlySeries.annotations.push(annotateData(xval, yval));
+              }
               if (row.yError) {
                 plotlySeries.error_y.array.push(normalizeValue(row.yError));
               }
@@ -340,6 +375,10 @@ const PlotlyChart = () => {
             plotlySeries.marker = {
               size: pluck(data, 'size'),
             };
+          }
+          if (showannotation) {
+            annotateSeries(plotlySeries);
+            scope.layout.annotations = scope.layout.annotations.concat(plotlySeries.annotations);
           }
           scope.data.push(plotlySeries);
         });
