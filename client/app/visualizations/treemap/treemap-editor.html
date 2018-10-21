@@ -1,0 +1,14 @@
+<div class="form-horizontal">
+  <div class="form-group">
+    <label class="col-lg-6">Parent Column Name</label>
+    <div class="col-lg-6">
+      <select ng-options="name for name in queryResult.getColumnNames()" ng-model="options.parentColumn" class="form-control"></select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-lg-6">Child Column Name</label>
+    <div class="col-lg-6">
+      <select ng-options="name for name in queryResult.getColumnNames()" ng-model="options.childColumn" class="form-control"></select>
+    </div>
+  </div>
+</div>
