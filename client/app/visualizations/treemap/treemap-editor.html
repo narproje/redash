@@ -11,4 +11,10 @@
       <select ng-options="name for name in queryResult.getColumnNames()" ng-model="options.childColumn" class="form-control"></select>
     </div>
   </div>
+  <div class="form-group">
+    <label class="col-lg-6">Cell Padding</label>
+    <div class="col-lg-6">
+      <input ng-model="options.cellPadding" type="number" step="any" class="form-control">
+    </div>
+  </div>
 </div>

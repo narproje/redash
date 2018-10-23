@@ -42,7 +42,7 @@ function createTreemap(element, data, scope) {
 
     let treemap = d3.layout.treemap()
       .size([width, height])
-      .padding(4)
+      .padding(scope.options.cellPadding)
       // .sort(function(a, b) { return a.value - b.value; })
       .value(function(d) { return d.size; });
 
@@ -172,7 +172,9 @@ export default function init(ngModule) {
       name: 'Treemap',
       renderTemplate: '<treemap-renderer options="visualization.options" query-result="queryResult"></treemap-renderer>',
       editorTemplate: editTemplate,
-      defaultOptions: {},
+      defaultOptions: {
+        cellPadding: 1,
+      },
     });
   });
 }
