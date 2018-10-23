@@ -44,7 +44,7 @@ function createTreemap(element, data, scope) {
       .size([width, height])
       .padding(scope.options.cellPadding)
       // .sort(function(a, b) { return a.value - b.value; })
-      .value(function(d) { return d.size; });
+      .value(function(d) { return d[scope.options.sizeColumn]; });
 
     const cell = svg.data(source).selectAll("g")
       .data(treemap.nodes)
