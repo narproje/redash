@@ -27,6 +27,8 @@ function createHierarchy(element, data, scope) {
     .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`,);
 
+  let tooltip = d3.select("visualization-renderer").append('div').attr("class", "treemap-tooltip");
+
   const rootTree = data[0];
   rootTree.x0 = height / 2;
   rootTree.y0 = 0;
@@ -74,39 +76,32 @@ function createHierarchy(element, data, scope) {
       }
     }
   
-    function mouseover(d) {
-      d3.select(this).append('text')
-      .attr('class', 'hover')
-      .attr('transform', function(d){ 
-        return 'translate(5, -10)';
-      })
-      .text(d.Code);
-    }
-  
-    function mouseout(d) {
-      d3.select(this).select('text.hover').remove();
-    }
-  
     // Compute the new tree layout.
     const nodes = tree.nodes(rootTree).reverse(),
           links = tree.links(nodes);
-  
+
     // Normalize for fixed-depth.
     nodes.forEach(function(d) { d.y = d.depth * 400; });
   
     // Declare the nodes…
     const node = svg.selectAll('g.node')
           .data(nodes, function(d) { return d.id || (d.id = ++i); });
-  
+
     // Enter the nodes.
     const nodeEnter = node.enter().append('g')
           .attr('class', 'node')
           .attr('transform', function(d) { 
-                return 'translate(' + source.y0 + ',' + source.x0 + ')'; })
+            return 'translate(' + source.y0 + ',' + source.x0 + ')'; })
           .on('click', click)
-          .on('mouseover', mouseover)
-          .on('mouseout', mouseout);
-  
+          .on("mousemove", function(d) {
+            tooltip.style("left", margin.left + d.y + 10 + "px");
+            tooltip.style("top", d.x + 10 + "px");
+            tooltip.style("display", "block");
+            tooltip.html("<b>" + d.name + "</b>");
+          }).on("mouseout", function(d) {
+            tooltip.style("display", "none");
+          });
+
     nodeEnter.append('circle')
           .attr('r', 10)
           .style('fill', function(d) { return d._children ? 'lightsteelblue' : '#fff'; });
