@@ -23,4 +23,11 @@
       <input ng-model="options.cellPadding" type="number" step="any" class="form-control">
     </div>
   </div>
+    <label><input type="checkbox" ng-model="options.tooltip.enabled"> Show tooltip</label>
+    <div>
+      <label for="tooltip-template">Tooltip template</label>
+      <input class="form-control" id="tooltip-template"
+        ng-model="options.tooltip.template" ng-model-options="{ allowInvalid: true, debounce: 200 }"
+        ng-disabled="!options.tooltip.enabled">
+    </div>
 </div>

@@ -5,6 +5,7 @@ import angular from 'angular';
 import editorTemplate from './treemap-editor.html';
 import { partial, map, each, keys, difference, debounce, pluck, max } from 'lodash';
 import { ColorPalette } from '@/visualizations/chart/plotly/utils';
+import { formatSimpleTemplate } from '@/lib/value-format';
 
 import './treemap.less';
 
@@ -52,7 +53,7 @@ function createTreemap(element, data, scope) {
       .attr("class", "cell")
       .attr("transform", function(d) { return "translate(" + margin.left + "," + margin.top + ")"; });
 
-    cell.append("rect")
+    const rects = cell.append("rect")
       .attr("id", function(d) { return "rect-" + d.name.replace(re, '-'); })
       .attr("x", function(d) { return d.x; })
       .attr("y", function(d) { return d.y; })
@@ -60,15 +61,19 @@ function createTreemap(element, data, scope) {
       .attr("height", function(d) { return d.dy; })
       .attr("stroke", "white")
       .attr("stroke-width", 0.5)
-      .attr("fill", function(d) { return d.children ? color(d.name) : color(d.parent.name); })
+      .attr("fill", function(d) { return d.children ? color(d.name) : color(d.parent.name); });
+
+    if (scope.options.tooltip.enabled) {
+      rects
       .on("mousemove", function(d) {
         tooltip.style("left", d.x + d.dx / 2 + "px");
         tooltip.style("top", d.y + d.dy / 2 + "px");
         tooltip.style("display", "block");
-        tooltip.html("<b>" + d.name + "</b>: " + format(d.value));
+        tooltip.html(formatSimpleTemplate(scope.options.tooltip.template, d));
       }).on("mouseout", function(d) {
         tooltip.style("display", "none");
       });
+    }
 
     cell.append("clipPath")
       .attr("id", function(d) { return "clip-" + d.name.replace(re, '-'); })
@@ -106,6 +111,12 @@ function treemapRenderer() {
           map[node[$scope.options.childColumn]] = node;
           return map;
         }, {});
+
+        each(queryData, (item) => {
+          item['@@child'] = item[$scope.options.childColumn];
+          item['@@parent'] = item[$scope.options.parentColumn];
+          item['@@size'] = item[$scope.options.sizeColumn];
+        });
 
         const treeData = [];
         // eslint-disable-next-line prefer-arrow-callback
@@ -174,6 +185,10 @@ export default function init(ngModule) {
       editorTemplate: editTemplate,
       defaultOptions: {
         cellPadding: 1,
+        tooltip: {
+          enabled: true,
+          template: '<b>{{ @@child }} :</b> {{ @@size }}',
+        },
       },
     });
   });
