@@ -1,3 +1,4 @@
+/* eslint-disable */
 
 import d3 from 'd3';
 import angular from 'angular';
@@ -29,6 +30,16 @@ function createTreemap(element, data, scope) {
   const tooltip = d3.select('visualization-renderer').append('div').attr('class', 'treemap-tooltip');
 
   const rootTree = data;
+
+  function datalabelText(item) {
+    const str = formatSimpleTemplate(scope.options.datalabel.template, item);
+    const arr = str.split('\n');
+    let string = '';
+    arr.forEach((t, i) => {
+      string += `<tspan dy="${i}em" x="${item.x}">${t}</tspan>`;
+    });
+    return string;
+  }
 
   function update(source) {
     const color = d3.scale.category20c();
@@ -75,18 +86,20 @@ function createTreemap(element, data, scope) {
         });
     }
 
-    cell.append('clipPath')
-      .attr('id', d => 'clip-' + d.name.replace(re, '-'))
-      .append('use')
-      .attr('xlink:href', d => '#rect-' + d.name.replace(re, '-') + '');
+    if (scope.options.datalabel.enabled) {
+      cell.append('clipPath')
+        .attr('id', d => 'clip-' + d.name.replace(re, '-'))
+        .append('use')
+        .attr('xlink:href', d => '#rect-' + d.name.replace(re, '-') + '');
 
-    cell.append('text')
-      .attr('class', 'treemap-text')
-      .attr('clip-path', d => 'url(#clip-' + d.name.replace(re, '-') + ')')
-      .attr('x', d => d.x + 3)
-      .attr('y', d => d.y)
-      .attr('dy', '1.3em')
-      .text((d) => { return d.children ? null : d.name; });
+      cell.append('text')
+        .attr('class', 'treemap-text')
+        .attr('clip-path', d => 'url(#clip-' + d.name.replace(re, '-') + ')')
+        .attr('x', d => d.x + 3)
+        .attr('y', d => d.y + 10)
+        .attr('dy', '1.3em')
+        .html((d) => { return d.children ? null : datalabelText(d); });
+    }
   }
   update(rootTree);
 }
@@ -173,6 +186,10 @@ export default function init(ngModule) {
         tooltip: {
           enabled: true,
           template: '<b>{{ @@child }} :</b> {{ @@size }}',
+        },
+        datalabel: {
+          enabled: true,
+          template: '{{ @@child }}',
         },
       },
     });

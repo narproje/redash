@@ -30,4 +30,11 @@
         ng-model="options.tooltip.template" ng-model-options="{ allowInvalid: true, debounce: 200 }"
         ng-disabled="!options.tooltip.enabled">
     </div>
+    <label><input type="checkbox" ng-model="options.datalabel.enabled"> Show data label</label>
+    <div>
+      <label for="datalabel-template">Datalabel template</label>
+      <textarea class="form-control" id="datalabel-template" rows="3"
+        ng-model="options.datalabel.template" ng-model-options="{ allowInvalid: true, debounce: 200 }"
+        ng-disabled="!options.datalabel.enabled">
+    </div>
 </div>
