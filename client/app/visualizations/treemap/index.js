@@ -36,7 +36,7 @@ function createTreemap(element, data, scope) {
     const arr = str.split('\n');
     let string = '';
     arr.forEach((t, i) => {
-      string += `<tspan dy="${i}em" x="${item.x}">${t}</tspan>`;
+      string += `<tspan dy="${i}em" x="${item.x}" dx="3px">${t}</tspan>`;
     });
     return string;
   }
@@ -95,7 +95,7 @@ function createTreemap(element, data, scope) {
       cell.append('text')
         .attr('class', 'treemap-text')
         .attr('clip-path', d => 'url(#clip-' + d.name.replace(re, '-') + ')')
-        .attr('x', d => d.x + 3)
+        .attr('x', d => d.x)
         .attr('y', d => d.y + 10)
         .attr('dy', '1.3em')
         .html((d) => { return d.children ? null : datalabelText(d); });
@@ -116,6 +116,8 @@ function treemapRenderer() {
     link($scope, element) {
       function refreshData() {
         const queryData = angular.copy($scope.queryResult.getData());
+
+        if (!queryData) { return; }
 
         // eslint-disable-next-line prefer-arrow-callback
         const dataMap = queryData.reduce(function (map, node) {
