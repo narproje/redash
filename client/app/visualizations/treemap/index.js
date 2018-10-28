@@ -1,8 +1,8 @@
-/* eslint-disable */
 
 import d3 from 'd3';
 import angular from 'angular';
-import { each, debounce } from 'lodash';
+import chroma from 'chroma-js';
+import { each, debounce, min, max } from 'lodash';
 import { ColorPalette } from '@/visualizations/chart/plotly/utils';
 import { formatSimpleTemplate } from '@/lib/value-format';
 import editorTemplate from './treemap-editor.html';
@@ -41,8 +41,36 @@ function createTreemap(element, data, scope) {
     return string;
   }
 
+  function getTreeAttr(array, attr) {
+    return array.reduce((r, a) => {
+      r.push(a[attr]);
+      if (a.children && Array.isArray(a.children)) {
+        r = r.concat(getTreeAttr(a.children, attr));
+      }
+      return r;
+    }, []);
+  }
+
   function update(source) {
-    const color = d3.scale.category20c();
+    const defaultColor = d3.scale.category20c();
+
+    const zMin = min(getTreeAttr(source, scope.options.colorColumn));
+    const zMax = max(getTreeAttr(source, scope.options.colorColumn));
+
+    const chromaColor = chroma.scale([
+      scope.options.colors.min,
+      scope.options.colors.max,
+    ]).domain([zMin, zMax]);
+
+    function getColor(item) {
+      if (scope.options.customColor.enabled) {
+        if (scope.options.customColor.encoding === 'category') {
+          return defaultColor(item[scope.options.colorColumn]);
+        }
+        return chromaColor(item[scope.options.colorColumn]);
+      }
+      return item.children ? defaultColor(item.name) : defaultColor(item.parent.name);
+    }
 
     const re = new RegExp('[ \']', 'g');
 
@@ -71,7 +99,7 @@ function createTreemap(element, data, scope) {
       .attr('height', d => d.dy)
       .attr('stroke', 'white')
       .attr('stroke-width', 0.5)
-      .attr('fill', (d) => { return d.children ? color(d.name) : color(d.parent.name); });
+      .attr('fill', d => getColor(d));
 
     if (scope.options.tooltip.enabled) {
       rects
@@ -98,6 +126,7 @@ function createTreemap(element, data, scope) {
         .attr('x', d => d.x)
         .attr('y', d => d.y + 10)
         .attr('dy', '1.3em')
+        // eslint-disable-next-line arrow-body-style
         .html((d) => { return d.children ? null : datalabelText(d); });
     }
   }
@@ -120,7 +149,7 @@ function treemapRenderer() {
         if (!queryData) { return; }
 
         // eslint-disable-next-line prefer-arrow-callback
-        const dataMap = queryData.reduce(function (map, node) {
+        const dataMap = queryData.reduce(function makeDatamap(map, node) {
           map[node[$scope.options.childColumn]] = node;
           return map;
         }, {});
@@ -133,7 +162,7 @@ function treemapRenderer() {
 
         const treeData = [];
         // eslint-disable-next-line prefer-arrow-callback
-        queryData.forEach(function (node) {
+        queryData.forEach(function makeTree(node) {
           // add to parent
           const parent = dataMap[node[$scope.options.parentColumn]];
           if (parent) {
@@ -168,6 +197,14 @@ function treemapEditor() {
       queryResult: '=',
       options: '=?',
     },
+    link($scope) {
+      $scope.colors = ColorPalette;
+
+      $scope.colorEncodings = {
+        value: 'value',
+        category: 'category',
+      };
+    },
   };
 }
 
@@ -192,6 +229,9 @@ export default function init(ngModule) {
         datalabel: {
           enabled: true,
           template: '{{ @@child }}',
+        },
+        customColor: {
+          encoding: 'value',
         },
       },
     });
